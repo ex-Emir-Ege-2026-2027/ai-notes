@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/client";
 import { Brain, Loader2, Mail, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type Step = "email" | "otp";
 
@@ -16,6 +16,11 @@ export default function LoginPage() {
   const [success, setSuccess] = useState(false);
   const router = useRouter();
   const supabase = createClient();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,22 +131,30 @@ export default function LoginPage() {
 
           {/* Card */}
           <div className="rounded-xl border border-border bg-card p-8 shadow-sm">
-            <div className="mb-6 space-y-1">
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" />
-                <span className="text-xs font-semibold uppercase tracking-widest text-primary">
-                  Hoş Geldin
-                </span>
+            {step === "email" ? (
+              <div className="mb-6 space-y-1">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <span className="text-xs font-semibold uppercase tracking-widest text-primary">
+                    Hoş Geldin
+                  </span>
+                </div>
+                <h1 className="text-xl font-bold">Giriş Yap</h1>
+                <p className="text-xs text-muted-foreground">
+                  E-posta adresinize doğrulama kodu gönderilecek.
+                </p>
               </div>
-              <h1 className="text-xl font-bold">
-                {step === "email" ? "Giriş Yap" : "Kodu Doğrula"}
-              </h1>
-              <p className="text-xs text-muted-foreground">
-                {step === "email"
-                  ? "E-posta adresinize doğrulama kodu gönderilecek."
-                  : `${email} adresine gönderilen 6 haneli kodu girin.`}
-              </p>
-            </div>
+            ) : (
+              <div className="mb-6 flex flex-col items-center space-y-3 text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                  <Mail className="h-6 w-6 text-primary" />
+                </div>
+                <h1 className="text-xl font-bold">Posta kutunuzu kontrol edin</h1>
+                <p className="text-sm text-muted-foreground">
+                  <span className="font-medium text-foreground">{email}</span> adresine gönderilen 6 haneli kodu girin.
+                </p>
+              </div>
+            )}
 
             {/* Email step */}
             {step === "email" && (
@@ -172,7 +185,7 @@ export default function LoginPage() {
 
                 <button
                   type="submit"
-                  disabled={loading || !email}
+                  disabled={!mounted || loading || !email}
                   className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {loading ? (
@@ -188,11 +201,6 @@ export default function LoginPage() {
             {/* OTP step */}
             {step === "otp" && (
               <form onSubmit={handleVerifyOTP} className="space-y-4">
-                {success && (
-                  <div className="animate-fade-up rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-600">
-                    ✅ Kod gönderildi! E-postanızı kontrol edin.
-                  </div>
-                )}
 
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-medium text-muted-foreground">
@@ -220,7 +228,7 @@ export default function LoginPage() {
 
                 <button
                   type="submit"
-                  disabled={loading || otp.length < 6}
+                  disabled={!mounted || loading || otp.length < 6}
                   className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {loading ? (
