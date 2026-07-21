@@ -1,14 +1,17 @@
 from fastapi import FastAPI
-from app.routes.notes import router as notes_router
+from app.auth import get_current_user, TokenClaims
+from fastapi import Depends
 
-app = FastAPI(
-    title="AI Notes API",
-    version="1.0.0"
-)
-
-app.include_router(notes_router)
-
+app = FastAPI()
 
 @app.get("/")
 def root():
-    return {"message": "Backend çalışıyor!"}
+    return {"message": "Backend çalışıyor"}
+
+@app.get("/me")
+def me(user: TokenClaims = Depends(get_current_user)):
+    return {
+        "user_id": user.sub,
+        "role": user.role,
+        "exp": user.exp,
+    }
