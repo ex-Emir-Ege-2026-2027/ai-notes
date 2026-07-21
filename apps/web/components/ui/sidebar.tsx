@@ -1,12 +1,11 @@
 "use client";
 
 import { useAuth } from "@/lib/hooks/use-auth";
+import logoImage from "@/assets/AI-Notes-logo.png";
 import { cn } from "@workspace/ui/lib/utils";
 import {
   BookOpen,
-  Brain,
   FileUp,
-  LayoutDashboard,
   LogOut,
   Menu,
   Moon,
@@ -15,6 +14,7 @@ import {
   User,
   X,
 } from "lucide-react";
+import Image from "next/image";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -48,8 +48,15 @@ export function Sidebar() {
     <div className="flex h-full flex-col">
       {/* Logo */}
       <div className="flex items-center gap-3 border-b border-sidebar-border px-5 py-5">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-          <Brain className="h-5 w-5" />
+        <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg border border-sidebar-border bg-white">
+          <Image
+            src={logoImage}
+            alt="AI Notes logosu"
+            width={36}
+            height={36}
+            className="h-full w-full object-cover"
+            priority
+          />
         </div>
         <div>
           <h1 className="text-sm font-bold tracking-tight text-sidebar-foreground">

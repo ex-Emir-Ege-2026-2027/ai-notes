@@ -2,7 +2,6 @@
 
 import { createClient } from "@/lib/supabase/client";
 import { Brain, Loader2, Mail, Sparkles } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
 type Step = "email" | "otp";
@@ -10,11 +9,8 @@ type Step = "email" | "otp";
 export default function LoginPage() {
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-  const router = useRouter();
   const supabase = createClient();
   const [mounted, setMounted] = useState(false);
 
@@ -41,28 +37,6 @@ export default function LoginPage() {
       setError(error.message);
     } else {
       setStep("otp");
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
-    }
-  };
-
-  const handleVerifyOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!otp || otp.length < 6) return;
-    setLoading(true);
-    setError(null);
-
-    const { error } = await supabase.auth.verifyOtp({
-      email,
-      token: otp,
-      type: "email",
-    });
-
-    setLoading(false);
-    if (error) {
-      setError("Kod hatalı veya süresi dolmuş. Tekrar deneyin.");
-    } else {
-      router.push("/notes");
     }
   };
 
@@ -141,7 +115,7 @@ export default function LoginPage() {
                 </div>
                 <h1 className="text-xl font-bold">Giriş Yap</h1>
                 <p className="text-xs text-muted-foreground">
-                  E-posta adresinize doğrulama kodu gönderilecek.
+                  E-posta adresinize giriş linki gönderilecek.
                 </p>
               </div>
             ) : (
@@ -151,7 +125,7 @@ export default function LoginPage() {
                 </div>
                 <h1 className="text-xl font-bold">Posta kutunuzu kontrol edin</h1>
                 <p className="text-sm text-muted-foreground">
-                  <span className="font-medium text-foreground">{email}</span> adresine gönderilen 6 haneli kodu girin.
+                  <span className="font-medium text-foreground">{email}</span> adresine gönderilen giriş linkine tıklayarak oturum açın.
                 </p>
               </div>
             )}
@@ -193,32 +167,17 @@ export default function LoginPage() {
                   ) : (
                     <Mail className="h-4 w-4" />
                   )}
-                  {loading ? "Gönderiliyor…" : "Kod Gönder"}
+                  {loading ? "Gönderiliyor…" : "Giriş Linki Gönder"}
                 </button>
               </form>
             )}
 
-            {/* OTP step */}
+            {/* Email link step */}
             {step === "otp" && (
-              <form onSubmit={handleVerifyOTP} className="space-y-4">
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-medium text-muted-foreground">
-                    Doğrulama Kodu
-                  </label>
-                  <input
-                    type="text"
-                    value={otp}
-                    onChange={(e) =>
-                      setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
-                    }
-                    placeholder="123456"
-                    maxLength={6}
-                    required
-                    autoFocus
-                    className="w-full rounded-xl border border-border bg-background py-3 text-center text-2xl font-bold tracking-[0.5em] placeholder:text-muted-foreground/30 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                  />
-                </div>
+              <div className="space-y-4">
+                <p className="rounded-lg bg-primary/10 px-3 py-2 text-xs text-primary">
+                  Linke tıkladığınızda oturumunuz otomatik açılacak ve notlar sayfasına yönlendirileceksiniz.
+                </p>
 
                 {error && (
                   <p className="animate-fade-up rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive">
@@ -227,28 +186,16 @@ export default function LoginPage() {
                 )}
 
                 <button
-                  type="submit"
-                  disabled={!mounted || loading || otp.length < 6}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {loading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : null}
-                  {loading ? "Doğrulanıyor…" : "Oturum Aç →"}
-                </button>
-
-                <button
                   type="button"
                   onClick={() => {
                     setStep("email");
-                    setOtp("");
                     setError(null);
                   }}
                   className="w-full text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
                 >
                   Farklı e-posta ile dene
                 </button>
-              </form>
+              </div>
             )}
           </div>
 

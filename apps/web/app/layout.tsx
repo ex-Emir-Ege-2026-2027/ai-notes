@@ -17,6 +17,11 @@ export const metadata: Metadata = {
     default: "AI Notes — Akıllı Not Alma Asistanı",
     template: "%s | AI Notes",
   },
+  icons: {
+    icon: "/icon.png",
+    shortcut: "/icon.png",
+    apple: "/apple-icon.png",
+  },
   description:
     "Yapay zeka destekli not alma ve öğrenme asistanı. Notlarınızı özetleyin, sorular üretin ve quiz çözün.",
   keywords: ["not alma", "yapay zeka", "öğrenme", "özetleme", "quiz"],
