@@ -1,4 +1,5 @@
 import { Sidebar } from "@/components/ui/sidebar";
+import { SessionTimeoutGuard } from "@/components/session-timeout-guard";
 
 export default function DashboardLayout({
   children,
@@ -7,6 +8,7 @@ export default function DashboardLayout({
 }) {
   return (
     <div className="flex min-h-svh bg-background">
+      <SessionTimeoutGuard />
       <Sidebar />
       <main className="flex-1 overflow-auto">
         <div className="mx-auto max-w-5xl px-6 py-8 lg:px-8">{children}</div>
