@@ -1,30 +1,20 @@
-# shadcn/ui monorepo template
+# AI Notes
 
-This is a Next.js monorepo template with shadcn/ui.
+## Backend JWT doğrulama
 
-## Adding components
+FastAPI backend, Supabase access token doğrulaması için `HTTPBearer` tabanlı bir dependency kullanır. Korunan endpoint'lere istek atılırken `Authorization: Bearer <token>` header'ı gerekir.
 
-To add components to your app, run the following command at the root of your `web` app:
+Gerekli environment değişkenleri:
+
+- `SUPABASE_URL`
+- `SUPABASE_KEY`
+- `SUPABASE_JWT_SECRET` veya `SUPABASE_JWKS_URL`
+- `SUPABASE_JWT_ALGORITHMS` (opsiyonel, varsayılan `HS256` ya da `RS256`)
+
+Örnek backend bağımlılıkları `apps/api/requirements.txt` dosyasında yer alır.
+
+Local çalıştırma örneği:
 
 ```bash
-pnpm dlx shadcn@latest add button -c apps/web
+python -m uvicorn app.main:app --reload
 ```
-
-This will place the ui components in the `packages/ui/src/components` directory.
-
-## Using components
-
-To use the components in your app, import them from the `ui` package.
-
-```tsx
-import { Button } from "@workspace/ui/components/button";
-```
-
-
-
-
-
-
-
-
-python -m uvicorn main:app --reload
