@@ -7,10 +7,8 @@ def get_categories():
 
 
 def get_category_by_id(category_id: str):
-	response = (
-		supabase.table("categories").select("*").eq("id", category_id).single().execute()
-	)
-	return response.data
+	response = supabase.table("categories").select("*").eq("id", category_id).execute()
+	return response.data[0] if response.data else None
 
 
 def create_category(name: str, color: str, user_id: str):
@@ -18,10 +16,9 @@ def create_category(name: str, color: str, user_id: str):
 		supabase.table("categories")
 		.insert({"name": name, "color": color, "user_id": user_id})
 		.select()
-		.single()
 		.execute()
 	)
-	return response.data
+	return response.data[0] if response.data else None
 
 
 def update_category(category_id: str, data: dict):
@@ -30,10 +27,9 @@ def update_category(category_id: str, data: dict):
 		.update(data)
 		.eq("id", category_id)
 		.select()
-		.single()
 		.execute()
 	)
-	return response.data
+	return response.data[0] if response.data else None
 
 
 def delete_category(category_id: str):
