@@ -27,11 +27,13 @@ const PRESET_COLORS = [
   "#64748b", // slate
 ];
 
+const DEFAULT_CATEGORY_COLOR = PRESET_COLORS[0] ?? "#6366f1";
+
 export default function CategoriesPage() {
   const { categories, loading, createCategory, updateCategory, deleteCategory } =
     useCategories();
   const [newName, setNewName] = useState("");
-  const [newColor, setNewColor] = useState(PRESET_COLORS[0]);
+  const [newColor, setNewColor] = useState<string>(DEFAULT_CATEGORY_COLOR);
   const [creating, setCreating] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
@@ -44,7 +46,7 @@ export default function CategoriesPage() {
     await createCategory({ name: newName.trim(), color: newColor });
     setCreating(false);
     setNewName("");
-    setNewColor(PRESET_COLORS[0]);
+    setNewColor(DEFAULT_CATEGORY_COLOR);
   };
 
   const startEdit = (cat: Category) => {

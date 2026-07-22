@@ -1,13 +1,15 @@
 "use client";
 
-import { createClient } from "@/lib/supabase/client";
+import {
+  getFileSignedUrl,
+  uploadFileAndSaveMetadata,
+} from "@/lib/supabase/storage";
 import type { NoteFile } from "@/lib/types";
 import { cn } from "@workspace/ui/lib/utils";
 import {
   CheckCircle,
   FileText,
   Loader2,
-  Trash2,
   Upload,
   X,
 } from "lucide-react";
@@ -35,22 +37,13 @@ interface UploadItem {
 export function UploadDropzone({ onUploaded, noteId }: UploadDropzoneProps) {
   const [items, setItems] = useState<UploadItem[]>([]);
   const [dragging, setDragging] = useState(false);
-  const supabase = createClient();
 
   const uploadFile = async (file: File, index: number) => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return;
-
     setItems((prev) =>
       prev.map((item, i) =>
         i === index ? { ...item, status: "uploading", progress: 0 } : item,
       ),
     );
-
-    const ext = file.name.split(".").pop();
-    const path = `${user.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
 
     // Simulate progress (Supabase Storage doesn't expose upload progress)
     const progressInterval = setInterval(() => {
@@ -64,31 +57,11 @@ export function UploadDropzone({ onUploaded, noteId }: UploadDropzoneProps) {
     }, 200);
 
     try {
-      const { error } = await supabase.storage
-        .from("note-files")
-        .upload(path, file, { upsert: false });
+      const result = await uploadFileAndSaveMetadata(file, {
+        noteId: noteId ?? null,
+      });
 
       clearInterval(progressInterval);
-
-      if (error) throw error;
-
-      // Insert into files table
-      const { data: fileRecord, error: dbError } = await supabase
-        .from("files")
-        .insert({
-          user_id: user.id,
-          note_id: noteId ?? null,
-          name: file.name,
-          size: file.size,
-          mime_type: file.type,
-          storage_path: path,
-        })
-        .select()
-        .single();
-
-      if (dbError) throw dbError;
-
-      const result = fileRecord as NoteFile;
 
       setItems((prev) =>
         prev.map((item, i) =>
@@ -115,6 +88,34 @@ export function UploadDropzone({ onUploaded, noteId }: UploadDropzoneProps) {
     }
   };
 
+  const handleOpenSignedUrl = async (index: number) => {
+    const item = items[index];
+    if (!item?.result) return;
+
+    try {
+      const signedUrl = await getFileSignedUrl(item.result.storage_path, 60);
+      if (!signedUrl) {
+        throw new Error("Signed URL oluşturulamadı");
+      }
+
+      window.open(signedUrl, "_blank", "noopener,noreferrer");
+    } catch (e) {
+      setItems((prev) =>
+        prev.map((current, i) =>
+          i === index
+            ? {
+                ...current,
+                error:
+                  e instanceof Error
+                    ? e.message
+                    : "Signed URL alınamadı",
+              }
+            : current,
+        ),
+      );
+    }
+  };
+
   const addFiles = useCallback(
     (files: FileList | File[]) => {
       const accepted = Array.from(files).filter((f) => {
@@ -131,8 +132,8 @@ export function UploadDropzone({ onUploaded, noteId }: UploadDropzoneProps) {
 
       setItems((prev) => [...prev, ...newItems]);
 
-      accepted.forEach((_, i) => {
-        setTimeout(() => uploadFile(accepted[i], startIndex + i), i * 300);
+      accepted.forEach((acceptedFile, i) => {
+        setTimeout(() => uploadFile(acceptedFile, startIndex + i), i * 300);
       });
     },
     [items.length], // eslint-disable-line react-hooks/exhaustive-deps
@@ -242,13 +243,24 @@ export function UploadDropzone({ onUploaded, noteId }: UploadDropzoneProps) {
                 )}
               </div>
 
-              {/* Remove */}
-              <button
-                onClick={() => removeItem(i)}
-                className="shrink-0 rounded-md p-1 hover:bg-muted"
-              >
-                <X className="h-3.5 w-3.5 text-muted-foreground" />
-              </button>
+              <div className="flex shrink-0 items-center gap-1">
+                {item.status === "done" && item.result && (
+                  <button
+                    onClick={() => handleOpenSignedUrl(i)}
+                    className="rounded-md border border-border px-2 py-1 text-[10px] font-medium hover:bg-muted"
+                  >
+                    Goruntule
+                  </button>
+                )}
+
+                {/* Remove */}
+                <button
+                  onClick={() => removeItem(i)}
+                  className="rounded-md p-1 hover:bg-muted"
+                >
+                  <X className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+              </div>
             </div>
           ))}
         </div>
